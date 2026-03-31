@@ -11,15 +11,25 @@
     <main class="app-shell">
       <section class="sidebar">
         <div class="brand-block">
-          <p class="eyebrow">Local Tabler PNG Tool</p>
+          <p class="eyebrow">Local Multi-Library PNG Tool</p>
           <h1>IconDrawer</h1>
-          <p class="lede">Search Tabler icons, sample a color from your slide, then drag the PNG straight into Google Slides.</p>
+          <p class="lede">Search icons across several libraries, sample a color from your slide, then drag the PNG straight into Google Slides.</p>
         </div>
 
-        <label class="field">
-          <span>Search icons</span>
-          <input id="search-input" type="search" placeholder="Try arrow, calendar, brand..." autocomplete="off" />
-        </label>
+        <div class="search-row">
+          <label class="field search-field">
+            <span>Search icons</span>
+            <input id="search-input" type="search" placeholder="Try arrow, calendar, brand..." autocomplete="off" />
+          </label>
+
+          <div class="field library-field">
+            <span>Libraries</span>
+            <div id="library-menu" class="library-menu">
+              <button id="library-menu-button" class="library-menu-button" type="button" aria-haspopup="true" aria-expanded="false">All libraries</button>
+              <div id="library-menu-options" class="library-menu-options"></div>
+            </div>
+          </div>
+        </div>
 
         <div class="toolbar">
           <div class="field compact">

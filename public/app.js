@@ -1,4 +1,7 @@
 const searchInput = document.querySelector("#search-input");
+const libraryMenu = document.querySelector("#library-menu");
+const libraryMenuButton = document.querySelector("#library-menu-button");
+const libraryMenuOptions = document.querySelector("#library-menu-options");
 const styleToggle = document.querySelector("#style-toggle");
 const colorInput = document.querySelector("#color-input");
 const hexInput = document.querySelector("#hex-input");
@@ -15,6 +18,8 @@ const downloadButton = document.querySelector("#download-button");
 
 const state = {
   icons: [],
+  libraries: [],
+  selectedLibraries: new Set(),
   filteredIcons: [],
   selectedIcon: null,
   selectedSvg: "",
@@ -23,7 +28,7 @@ const state = {
   pngUrl: "",
 };
 
-const MAX_GRID_ITEMS = 120;
+const MAX_GRID_ITEMS = 160;
 
 initialize();
 
@@ -35,9 +40,13 @@ async function initialize() {
     const response = await fetch("/api/icons");
     const payload = await response.json();
     state.icons = payload.icons;
+    state.libraries = payload.libraries;
+    state.selectedLibraries = new Set(payload.libraries.map((library) => library.key));
+    renderLibraryOptions();
+    updateLibraryMenuButton();
     applySearch();
   } catch (error) {
-    resultCount.textContent = "Failed to load Tabler icons.";
+    resultCount.textContent = "Failed to load icon libraries.";
     console.error(error);
   }
 }
@@ -45,6 +54,18 @@ async function initialize() {
 function setupEvents() {
   searchInput.addEventListener("input", () => {
     applySearch();
+  });
+
+  libraryMenuButton.addEventListener("click", () => {
+    libraryMenu.toggleAttribute("open");
+    libraryMenuButton.setAttribute("aria-expanded", String(libraryMenu.hasAttribute("open")));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!libraryMenu.contains(event.target)) {
+      libraryMenu.removeAttribute("open");
+      libraryMenuButton.setAttribute("aria-expanded", "false");
+    }
   });
 
   styleToggle.addEventListener("click", (event) => {
@@ -84,7 +105,7 @@ function setupEvents() {
 
     const link = document.createElement("a");
     link.href = state.pngUrl;
-    link.download = `${state.selectedIcon.name}-${state.style}-${sizeSelect.value}px-${state.color.slice(1)}.png`;
+    link.download = `${state.selectedIcon.library}-${state.selectedIcon.name}-${state.style}-${sizeSelect.value}px-${state.color.slice(1)}.png`;
     link.click();
   });
 
@@ -94,7 +115,7 @@ function setupEvents() {
       return;
     }
 
-    const filename = `${state.selectedIcon.name}-${state.style}.png`;
+    const filename = `${state.selectedIcon.library}-${state.selectedIcon.name}-${state.style}.png`;
     event.dataTransfer.effectAllowed = "copy";
     event.dataTransfer.setData("text/plain", state.pngUrl);
     event.dataTransfer.setData("text/uri-list", state.pngUrl);
@@ -104,6 +125,64 @@ function setupEvents() {
       event.dataTransfer.setDragImage(dragImage, dragImage.width / 2, dragImage.height / 2);
     }
   });
+}
+
+function renderLibraryOptions() {
+  libraryMenuOptions.textContent = "";
+
+  for (const library of state.libraries) {
+    const option = document.createElement("label");
+    option.className = "library-option";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = library.key;
+    checkbox.checked = state.selectedLibraries.has(library.key);
+    checkbox.addEventListener("change", () => {
+      toggleLibrary(library.key, checkbox.checked);
+    });
+
+    const text = document.createElement("span");
+    text.textContent = library.label;
+
+    option.append(checkbox, text);
+    libraryMenuOptions.append(option);
+  }
+}
+
+function toggleLibrary(libraryKey, enabled) {
+  if (enabled) {
+    state.selectedLibraries.add(libraryKey);
+  } else if (state.selectedLibraries.size > 1) {
+    state.selectedLibraries.delete(libraryKey);
+  } else {
+    const checkbox = libraryMenuOptions.querySelector(`input[value="${libraryKey}"]`);
+    if (checkbox) {
+      checkbox.checked = true;
+    }
+    return;
+  }
+
+  updateLibraryMenuButton();
+  applySearch();
+}
+
+function updateLibraryMenuButton() {
+  const selectedLabels = state.libraries
+    .filter((library) => state.selectedLibraries.has(library.key))
+    .map((library) => library.label);
+
+  if (selectedLabels.length === state.libraries.length) {
+    libraryMenuButton.textContent = "All libraries";
+    return;
+  }
+
+  if (selectedLabels.length === 1) {
+    libraryMenuButton.textContent = selectedLabels[0];
+    return;
+  }
+
+  libraryMenuButton.textContent = `${selectedLabels.length} libraries`;
 }
 
 function updateColor(rawValue) {
@@ -116,7 +195,7 @@ function updateColor(rawValue) {
 
 function applySearch() {
   const query = searchInput.value.trim().toLowerCase();
-  state.filteredIcons = state.icons.filter((icon) => matchesQuery(icon, query));
+  state.filteredIcons = state.icons.filter((icon) => state.selectedLibraries.has(icon.library) && matchesQuery(icon, query));
   renderGrid();
 }
 
@@ -125,7 +204,7 @@ function matchesQuery(icon, query) {
     return true;
   }
 
-  const haystack = [icon.name, icon.category, ...icon.tags].join(" ").toLowerCase();
+  const haystack = [icon.name, icon.category, icon.library, ...icon.tags].join(" ").toLowerCase();
   return haystack.includes(query);
 }
 
@@ -138,7 +217,7 @@ function renderGrid() {
   if (!visibleIcons.length) {
     const emptyState = document.createElement("p");
     emptyState.className = "hint";
-    emptyState.textContent = "No icons match that search yet.";
+    emptyState.textContent = "No icons match that search and library combination yet.";
     iconGrid.append(emptyState);
     return;
   }
@@ -147,21 +226,25 @@ function renderGrid() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "icon-button";
-    if (state.selectedIcon?.name === icon.name) {
+    if (state.selectedIcon?.library === icon.library && state.selectedIcon?.name === icon.name) {
       button.classList.add("selected");
     }
+
+    const badge = document.createElement("span");
+    badge.className = "icon-library";
+    badge.textContent = getLibraryLabel(icon.library);
 
     const image = document.createElement("img");
     image.loading = "lazy";
     image.decoding = "async";
     image.alt = "";
-    image.src = `/api/icon/${resolveAvailableStyle(icon)}/${icon.name}`;
+    image.src = `/api/icon/${icon.library}/${resolveAvailableStyle(icon)}/${icon.name}`;
 
     const label = document.createElement("span");
     label.className = "icon-name";
     label.textContent = icon.name;
 
-    button.append(image, label);
+    button.append(badge, image, label);
     button.addEventListener("click", async () => {
       state.selectedIcon = icon;
       if (!icon.styles.includes(state.style)) {
@@ -182,7 +265,7 @@ async function loadSelectedIcon() {
     return;
   }
 
-  const response = await fetch(`/api/icon/${state.style}/${state.selectedIcon.name}`);
+  const response = await fetch(`/api/icon/${state.selectedIcon.library}/${state.style}/${state.selectedIcon.name}`);
   state.selectedSvg = await response.text();
 }
 
@@ -213,7 +296,7 @@ async function renderSelectedIcon() {
     return;
   }
 
-  previewTitle.textContent = `${state.selectedIcon.name} (${state.style})`;
+  previewTitle.textContent = `${state.selectedIcon.name} (${getLibraryLabel(state.selectedIcon.library)} · ${state.style})`;
 
   const recoloredSvg = recolorSvg(state.selectedSvg, state.color);
   const svgDataUrl = createSvgDataUrl(recoloredSvg);
@@ -240,7 +323,7 @@ function updateSelectionLabel() {
     return;
   }
 
-  selectionLabel.textContent = `${state.selectedIcon.name} · ${state.style}`;
+  selectionLabel.textContent = `${getLibraryLabel(state.selectedIcon.library)} · ${state.selectedIcon.name} · ${state.style}`;
 }
 
 function syncStyleButtons() {
@@ -258,11 +341,12 @@ function syncStyleButtons() {
 }
 
 function recolorSvg(svg, color) {
-  const withCurrentColor = svg
+  return svg
     .replace(/stroke="currentColor"/g, `stroke="${color}"`)
-    .replace(/fill="currentColor"/g, `fill="${color}"`);
-
-  return withCurrentColor.replace(/<svg\b([^>]*)>/, "<svg$1 aria-hidden=\"true\" focusable=\"false\">");
+    .replace(/fill="currentColor"/g, `fill="${color}"`)
+    .replace(/stroke="#(?:[0-9a-fA-F]{3}){1,2}"/g, `stroke="${color}"`)
+    .replace(/fill="#(?:[0-9a-fA-F]{3}){1,2}"/g, `fill="${color}"`)
+    .replace(/<svg\b([^>]*)>/, "<svg$1 aria-hidden=\"true\" focusable=\"false\">");
 }
 
 function createSvgDataUrl(svgMarkup) {
@@ -302,6 +386,10 @@ async function rasterizeSvg(svgUrl, size) {
       reader.readAsDataURL(blob);
     }),
   };
+}
+
+function getLibraryLabel(libraryKey) {
+  return state.libraries.find((library) => library.key === libraryKey)?.label || libraryKey;
 }
 
 function normalizeHex(value) {

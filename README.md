@@ -1,10 +1,11 @@
 # IconDrawer
 
-Local Tabler icon browser for generating transparent PNGs you can drag straight into Google Slides.
+Local multi-library icon browser for generating transparent PNGs you can drag straight into Google Slides.
 
 ## Features
 
-- Search the local Tabler icon library
+- Search across Tabler, Lucide, Phosphor, and Iconoir
+- Filter results with a library multi-select dropdown
 - Switch between `outline` and `filled` variants when available
 - Pick colors with the native browser color input, including the built-in eyedropper on supported systems
 - Export transparent PNGs at common square sizes
@@ -23,9 +24,10 @@ Open [http://127.0.0.1:4173](http://127.0.0.1:4173) in your browser.
 ## How to use it
 
 1. Search for an icon by name.
-2. Choose `outline` or `filled` if both exist.
-3. Pick the icon color and output size.
-4. Drag the preview into Google Slides, or click `Download PNG`.
+2. Use the library dropdown to search one or several icon sets at once.
+3. Choose `outline` or `filled` if the selected icon supports both.
+4. Pick the icon color and output size.
+5. Drag the preview into Google Slides, or click `Download PNG`.
 
 ## Notes
 

@@ -17,6 +17,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tabler/icons": "^3.41.1"
+    "@phosphor-icons/core": "^2.1.1",
+    "@tabler/icons": "^3.41.1",
+    "iconoir": "^7.11.0",
+    "lucide-static": "^1.7.0"
   }
 }
