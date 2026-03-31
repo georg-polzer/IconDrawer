@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IconDrawer</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231f6feb'/%3E%3Cpath d='M16 32h32M16 32l13 13M16 32l13-13' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="sidebar">
+        <div class="brand-block">
+          <p class="eyebrow">Local Tabler PNG Tool</p>
+          <h1>IconDrawer</h1>
+          <p class="lede">Search Tabler icons, sample a color from your slide, then drag the PNG straight into Google Slides.</p>
+        </div>
+
+        <label class="field">
+          <span>Search icons</span>
+          <input id="search-input" type="search" placeholder="Try arrow, calendar, brand..." autocomplete="off" />
+        </label>
+
+        <div class="toolbar">
+          <div class="field compact">
+            <span>Variant</span>
+            <div class="segmented-control" id="style-toggle" role="group" aria-label="Icon variant">
+              <button type="button" class="segment selected" data-style="outline" aria-pressed="true">Outline</button>
+              <button type="button" class="segment" data-style="filled" aria-pressed="false">Filled</button>
+            </div>
+          </div>
+
+          <label class="field compact">
+            <span>Color</span>
+            <input id="color-input" type="color" value="#1f6feb" />
+          </label>
+
+          <label class="field compact">
+            <span>Hex</span>
+            <input id="hex-input" type="text" value="#1F6FEB" spellcheck="false" />
+          </label>
+
+          <label class="field compact">
+            <span>Size</span>
+            <select id="size-select">
+              <option value="128">128 px</option>
+              <option value="256" selected>256 px</option>
+              <option value="512">512 px</option>
+              <option value="1024">1024 px</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="result-meta">
+          <span id="result-count">Loading icons...</span>
+          <span id="selection-label">No icon selected</span>
+        </div>
+
+        <div id="icon-grid" class="icon-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="preview-panel">
+        <div class="preview-card">
+          <div class="preview-header">
+            <div>
+              <p class="eyebrow">PNG preview</p>
+              <h2 id="preview-title">Choose an icon</h2>
+            </div>
+            <button id="download-button" type="button" disabled>Download PNG</button>
+          </div>
+
+          <div id="preview-stage" class="preview-stage">
+            <div id="svg-preview" class="svg-preview empty">Select an icon to preview it here.</div>
+            <img id="drag-image" class="drag-image hidden" alt="Generated PNG preview" draggable="true" />
+            <p id="drag-help" class="hint preview-hint">Once you select an icon, drag this preview straight into your Slides window.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

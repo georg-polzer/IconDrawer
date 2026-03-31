@@ -1,0 +1,22 @@
+{
+  "name": "icondrawer",
+  "version": "1.0.0",
+  "description": "Local Tabler icon browser for exporting transparent PNGs for Google Slides.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "tabler-icons",
+    "png",
+    "google-slides",
+    "icons",
+    "local-tool"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tabler/icons": "^3.41.1"
+  }
+}
