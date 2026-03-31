@@ -148,6 +148,7 @@ h2 {
   grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
   gap: 12px;
   align-items: end;
+  margin-bottom: 12px;
 }
 
 .search-field,
